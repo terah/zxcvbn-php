@@ -2,7 +2,7 @@
 
 namespace ZxcvbnPhp\Matchers;
 
-abstract class Match implements MatchInterface
+abstract class Match implements MatchInterface, \JsonSerializable
 {
     /**
      * @var
@@ -47,11 +47,11 @@ abstract class Match implements MatchInterface
      */
     public function __construct($password, $begin, $end, $token)
     {
-        $this->password = $password;
-        $this->begin = $begin;
-        $this->end = $end;
-        $this->token = $token;
-        $this->entropy = null;
+        $this->password    = $password;
+        $this->begin       = $begin;
+        $this->end         = $end;
+        $this->token       = $token;
+        $this->entropy     = null;
         $this->cardinality = null;
     }
 
@@ -63,7 +63,7 @@ abstract class Match implements MatchInterface
      *
      * @return array Array of Match objects
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
     }
 
@@ -166,6 +166,31 @@ abstract class Match implements MatchInterface
         return $this->cardinality;
     }
 
+    /**
+     * @return string
+     */
+    public function jsonSerialize()
+    {
+        return $this->__toString();
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getMatch();
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        return '';
+    }
+
     protected function isDigit($ord)
     {
         return $ord >= 0x30 && $ord <= 0x39;
@@ -224,5 +249,20 @@ abstract class Match implements MatchInterface
         }
 
         return $res;
+    }
+
+    /**
+     * @param $word
+     * @return string
+     */
+    protected function obfuscateWord($word)
+    {
+        $length = strlen($word);
+        if ( $length < 3 )
+        {
+            return $word;
+        }
+
+        return substr($word, 0, 1) . str_repeat('*', $length - 2) . substr($word, -1, 1);
     }
 }

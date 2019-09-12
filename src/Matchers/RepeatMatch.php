@@ -33,7 +33,7 @@ class RepeatMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $groups = static::group($password);
         $matches = [];
@@ -64,6 +64,17 @@ class RepeatMatch extends Match
         }
 
         return $this->entropy;
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->token) : $this->token;
+
+        return "The password contains a three or more repeated characters: {$match}.";
     }
 
     /**

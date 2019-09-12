@@ -49,7 +49,7 @@ class L33tMatch extends DictionaryMatch
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         // Translate l33t password and dictionary match the translated password.
         $map = static::getSubstitutions($password);
@@ -60,7 +60,7 @@ class L33tMatch extends DictionaryMatch
         $translatedWord = static::translate($password, $map);
 
         $matches = [];
-        $dicts = static::getRankedDictionaries();
+        $dicts = static::getRankedDictionaries(! empty($params['dictionary_file']) ? $params['dictionary_file'] : '');
         foreach ($dicts as $name => $dict) {
             $results = static::dictionaryMatch($translatedWord, $dict);
             foreach ($results as $result) {
@@ -88,6 +88,27 @@ class L33tMatch extends DictionaryMatch
     public function getEntropy()
     {
         return parent::getEntropy() + $this->l33tEntropy();
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->matchedWord) : $this->matchedWord;
+        if ( in_array($this->dictionaryName, ['passwords', 'dictionary']) )
+        {
+            return "The password contains a common substitution for the word or phase: {$match}.";
+        }
+        if ( in_array($this->dictionaryName, ['user_inputs']) )
+        {
+            return "The password contains a common substitution for some of your user details: {$match}.";
+        }
+        $dictionary = str_replace('_', ' ', $this->dictionaryName);
+        $dictionary = preg_replace('/s$/', '', $dictionary);
+
+        return "The password contains a common substitution for the {$dictionary} word: {$match}.";
     }
 
     /**

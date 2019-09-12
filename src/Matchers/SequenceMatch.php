@@ -51,7 +51,7 @@ class SequenceMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
         $passwordLength = strlen($password);
@@ -122,6 +122,17 @@ class SequenceMatch extends Match
         }
 
         return $entropy + $this->log(strlen($this->token));
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->token) : $this->token;
+
+        return "The password contains a three or more sequences of characters: {$match}.";
     }
 
     /**

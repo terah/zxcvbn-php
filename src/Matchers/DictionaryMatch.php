@@ -47,10 +47,10 @@ class DictionaryMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
-        $dicts = static::getRankedDictionaries();
+        $dicts = static::getRankedDictionaries(! empty($params['dictionary_file']) ? $params['dictionary_file'] : '');
         if (!empty($userInputs)) {
             $dicts['user_inputs'] = [];
             foreach ($userInputs as $rank => $input) {
@@ -76,6 +76,35 @@ class DictionaryMatch extends Match
     public function getEntropy()
     {
         return $this->log($this->rank) + $this->uppercaseEntropy();
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->matchedWord) : $this->matchedWord;
+        if ( in_array($this->dictionaryName, ['passwords', 'dictionary']) )
+        {
+            return "The password contains a common word or phase: {$match}.";
+        }
+        if ( in_array($this->dictionaryName, ['user_inputs']) )
+        {
+            return "The password contains some of your user details: {$match}.";
+        }
+        $dictionary = str_replace('_', ' ', $this->dictionaryName);
+        $dictionary = preg_replace('/s$/', '', $dictionary);
+
+        return "The password contains a {$dictionary} word: {$match}.";
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->getMatch();
     }
 
     /**
@@ -165,9 +194,10 @@ class DictionaryMatch extends Match
      *
      * @return array
      */
-    protected static function getRankedDictionaries()
+    protected static function getRankedDictionaries($dictionaryFile='')
     {
-        $data = file_get_contents(__DIR__.'/ranked_frequency_lists.json');
+        $dictionaryFile = ! empty($dictionaryFile) ? $dictionaryFile : dirname(__FILE__) . '/ranked_frequency_lists.json';
+        $data           = file_get_contents($dictionaryFile);
 
         return json_decode($data, true);
     }

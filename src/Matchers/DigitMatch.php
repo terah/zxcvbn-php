@@ -26,7 +26,7 @@ class DigitMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
         $groups = static::findAll($password, '/(\\d{3,})/');
@@ -47,5 +47,16 @@ class DigitMatch extends Match
         }
 
         return $this->entropy;
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->token) : $this->token;
+
+        return "The password contains three or more digits: {$match}.";
     }
 }

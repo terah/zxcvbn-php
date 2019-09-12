@@ -14,11 +14,11 @@ class Matcher
      *
      * @return array Array of Match objects
      */
-    public function getMatches($password, array $userInputs = [])
+    public function getMatches($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
         foreach ($this->getMatchers() as $matcher) {
-            $matched = $matcher::match($password, $userInputs);
+            $matched = $matcher::match($password, $userInputs, $params);
             if (is_array($matched) && !empty($matched)) {
                 $matches = array_merge($matches, $matched);
             }

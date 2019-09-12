@@ -28,7 +28,7 @@ class YearMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
         $groups = static::findAll($password, '/(19\\d\\d|200\\d|201\\d)/');
@@ -49,5 +49,16 @@ class YearMatch extends Match
         }
 
         return $this->entropy;
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->token) : $this->token;
+
+        return "The password contains the year: {$match}.";
     }
 }

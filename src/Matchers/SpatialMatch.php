@@ -75,7 +75,7 @@ class SpatialMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
         $graphs = static::getAdjacencyGraphs();
@@ -130,6 +130,17 @@ class SpatialMatch extends Match
         }
 
         return $entropy;
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->token) : $this->token;
+
+        return "The password contains common keyboard patterns: {$match}.";
     }
 
     /**

@@ -30,7 +30,7 @@ class Bruteforce extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         // Matches entire string.
         $match = new static($password, 0, strlen($password) - 1, $password);

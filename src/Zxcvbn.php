@@ -19,11 +19,17 @@ class Zxcvbn
      */
     protected $matcher;
 
-    public function __construct()
+    /**
+     * @var array
+     */
+    protected $params;
+
+    public function __construct(array $params=array())
     {
         $this->scorer = new Scorer();
         $this->searcher = new Searcher();
         $this->matcher = new Matcher();
+        $this->params  = $params;
     }
 
     /**
@@ -48,7 +54,7 @@ class Zxcvbn
         }
 
         // Get matches for $password.
-        $matches = $this->matcher->getMatches($password, $userInputs);
+        $matches = $this->matcher->getMatches($password, $userInputs, $this->params);
 
         // Calcuate minimum entropy and get best match sequence.
         $entropy = $this->searcher->getMinimumEntropy($password, $matches);
@@ -63,6 +69,62 @@ class Zxcvbn
         $params = array_merge($metrics, ['calc_time' => $timeStop]);
 
         return $this->result($password, $entropy, $bestMatches, $score, $params);
+    }
+
+    /**
+     * @param string[] $words
+     * @param string $type
+     * @return bool
+     */
+    public function addWordsToPasswordList(array $words, $type)
+    {
+        $fileName       = ! empty($this->params['dictionary_file']) ? $this->params['dictionary_file'] : dirname(__FILE__) . '/Matchers/ranked_frequency_lists.json';
+        $data           = file_get_contents($fileName);
+        $data           = json_decode($data, true);
+        $data[$type]    = array_key_exists($type, $data) ? $data[$type] : [];
+        $changed        = false;
+        foreach ( $words as $word )
+        {
+            $word = preg_replace("/[^0-9a-z']/", '', strtolower(trim($word)));
+            if ( is_numeric($word) || empty($word) || strlen($word) < 4 )
+            {
+                continue;
+            }
+            if ( static::isInPasswordLists($word, $data) )
+            {
+                continue;
+            }
+            $nextVal            = empty($data[$type]) ? 1 : max($data[$type]) + 1;
+            $data[$type][$word] = $nextVal;
+            $changed            = true;
+        }
+        if ( ! $changed )
+        {
+            return true;
+        }
+        $data           = json_encode($data);
+        if ( ! $data || ! file_put_contents($fileName, $data) )
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param string $word
+     * @param array $lists
+     * @return bool
+     */
+    protected static function isInPasswordLists($word, array $lists)
+    {
+        foreach ( $lists as $category => $list )
+        {
+            if ( array_key_exists($word, $list) )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -14,7 +14,7 @@ interface MatchInterface
      *
      * @return array Array of Match objects
      */
-    public static function match($password, array $userInputs = []);
+    public static function match($password, array $userInputs = [], array $params = []);
 
     /**
      * Get entropy for this match's token.
@@ -23,4 +23,15 @@ interface MatchInterface
      *               Entropy of the matched token in the password
      */
     public function getEntropy();
+
+    /**
+     * @return string
+     */
+    public function __toString();
+
+    /**
+     * @param bool $obfuscate
+     * @return mixed
+     */
+    public function getMatch($obfuscate=false);
 }

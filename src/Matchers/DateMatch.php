@@ -59,7 +59,7 @@ class DateMatch extends Match
      *
      * @return array
      */
-    public static function match($password, array $userInputs = [])
+    public static function match($password, array $userInputs = [], array $params = [])
     {
         $matches = [];
         $dates = static::datesWithoutSeparators($password) + static::datesWithSeparators($password);
@@ -90,6 +90,17 @@ class DateMatch extends Match
         }
 
         return $entropy;
+    }
+
+    /**
+     * @param bool $obfuscate
+     * @return string
+     */
+    public function getMatch($obfuscate=false)
+    {
+        $match      = $obfuscate ? $this->obfuscateWord($this->token) : $this->token;
+
+        return "The password contains a date: {$match}.";
     }
 
     /**
